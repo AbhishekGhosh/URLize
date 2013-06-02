@@ -14,6 +14,9 @@ Examples
 	urlize.php http://www.joanbotella.com/urlize
 	http%3A%2F%2Fwww.joanbotella.com%2Furlize
 
+	urlize.php -d https%3A%2F%2Fgithub.com%2FJoanBotella%2Furlize
+	https://github.com/JoanBotella/urlize
+
 	echo "This is an example" | urlize.php -n
 	This+is+an+example
 
