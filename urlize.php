@@ -27,6 +27,7 @@ Author web site: <http://www.joanbotella.com>
 // --- Options ------------------------------------------------------
 
 $i=0;
+define('OPTION_ALGORITHM',$i++);
 define('OPTION_BASE64',$i++);
 define('OPTION_DECODE',$i++);
 define('OPTION_ENTITIES',$i++);
@@ -39,6 +40,7 @@ define('OPTION_RAW',$i++);
 
 //defaults
 $options=array(
+	OPTION_ALGORITHM=>'',
 	OPTION_BASE64=>false,
 	OPTION_DECODE=>false,
 	OPTION_ENTITIES=>false,
@@ -61,6 +63,7 @@ define('ERROR_FILE_NOT_READABLE',$i++);
 define('ERROR_FILE_NOT_WRITABLE',$i++);
 define('ERROR_MULTIPLE_ENCODINGS',$i++);
 define('ERROR_MULTIPLE_INPUTS',$i++);
+define('ERROR_HASH_DECODING',$i++);
 // define('ERROR_',$i++);
 
 
@@ -72,8 +75,10 @@ function help(){
 Description:
 	Encodes text into web developers useful encodings. By default, the URL encoding is used.
 Usage:
-	urlize.php {-b|-e|-r} [-d] [-n] [-h] [-o filename] [-i filename|"text to encode"]
+	urlize.php {-a algorithm [-r]|-b|-e|-r} [-d] [-n] [-h] [-o filename] [-i filename|"text to encode"]
 Options:
+	-a algorithm, --algorithm algorithm
+		Encodes using the selected algorithm. Not supported algorithms returns an empty string. Combine with -r for raw output.
 	-b, --base64
 		Encodes using base64
 	-d, --decode
@@ -89,7 +94,7 @@ Options:
 	-o filename, --output filename
 		Outputs result into a file, creating or overwriting it.
 	-r, --raw
-		URL encodes according to RFC 1738 <http://www.rfc-editor.org/rfc/rfc1738.txt>.
+		URL encodes according to RFC 1738 <http://www.rfc-editor.org/rfc/rfc1738.txt>, or returns raw output when using with -a .
 Examples:
 	urlize.php -r -i example.txt
 	urlize.php -o example.txt "This is an example"
@@ -123,6 +128,9 @@ function error($options,$e=false){
 		case ERROR_MULTIPLE_ENCODINGS:
 			$s='Please, choose just one encoding method. Use -h for help.';
 			break;
+		case ERROR_HASH_DECODING:
+			$s='I can\'t decode hashed strings!';
+			break;
 		case ERROR_DEFAULT:
 		default:
 			$e=ERROR_DEFAULT;
@@ -141,6 +149,17 @@ function manageParameters($options){
 	for($i=1;$i<$_SERVER['argc'];$i++){
 
 		switch($_SERVER['argv'][$i]){
+			case '-a':
+			case '--algorithm':
+				if(
+					isset($_SERVER['argv'][$i+1])
+				){
+					$options[OPTION_ALGORITHM]=$_SERVER['argv'][$i+1];
+					$i++;
+				}else{
+					error($options,ERROR_SYNTAX);
+				}
+				break;
 			case '-b':
 			case '--base64':
 				$options[OPTION_BASE64]=true;
@@ -252,15 +271,29 @@ function doTheEncoding($options,$s){
 
 	$encoded=false;
 
-	if($options[OPTION_BASE64]){
+	if($options[OPTION_ALGORITHM]){
+		if(!$options[OPTION_DECODE]){
 
-		if($options[OPTION_DECODE]){
-			$s=base64_decode($s);
+			$s=@hash($options[OPTION_ALGORITHM],$s,$options[OPTION_RAW]);
+			$encoded=true;
 		}else{
-			$s=base64_encode($s);
+			error($options,ERROR_HASH_DECODING);
 		}
+	}
 
-		$encoded=true;
+	if($options[OPTION_BASE64]){
+		if(!$encoded){
+
+			if($options[OPTION_DECODE]){
+				$s=base64_decode($s);
+			}else{
+				$s=base64_encode($s);
+			}
+
+			$encoded=true;
+		}else{
+			error($options,ERROR_MULTIPLE_ENCODINGS);
+		}
 	}
 
 	if($options[OPTION_ENTITIES]){
@@ -282,7 +315,10 @@ function doTheEncoding($options,$s){
 		}
 	}
 
-	if($options[OPTION_RAW]){
+	if(
+		$options[OPTION_RAW]
+		&& $options[OPTION_ALGORITHM]==''
+	){
 		if(!$encoded){
 
 			if($options[OPTION_DECODE]){
