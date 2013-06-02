@@ -3,6 +3,20 @@ URLize
 
 PHP CLI script for encoding into URL, base64 and others.
 
+Requirements
+============
+
+As a PHP version 5 CLI script, it requires the cli package for PHP 5 (php5-cli) installed, at least on Linux systems.
+
+Examples
+========
+
+	urlize.php http://www.joanbotella.com/urlize
+	http%3A%2F%2Fwww.joanbotella.com%2Furlize
+
+	echo "This is an example" | urlize.php -n
+	This+is+an+example
+
 Help
 ====
 
@@ -26,8 +40,7 @@ Options:
 	-o filename, --output filename
 		Outputs result into a file, creating or overwriting it.
 	-r, --raw
-		URL encodes according to RFC 1738 
-		<http://www.rfc-editor.org/rfc/rfc1738.txt>.
+		URL encodes according to RFC 1738 <http://www.rfc-editor.org/rfc/rfc1738.txt>.
 Examples:
 	urlize.php -r -i example.txt
 	urlize.php -o example.txt "This is an example"

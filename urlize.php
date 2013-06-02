@@ -89,8 +89,7 @@ Options:
 	-o filename, --output filename
 		Outputs result into a file, creating or overwriting it.
 	-r, --raw
-		URL encodes according to RFC 1738 
-		<http://www.rfc-editor.org/rfc/rfc1738.txt>.
+		URL encodes according to RFC 1738 <http://www.rfc-editor.org/rfc/rfc1738.txt>.
 Examples:
 	urlize.php -r -i example.txt
 	urlize.php -o example.txt "This is an example"
@@ -237,11 +236,9 @@ function getTheInput($options){
 
 		//Pipes
 
-		$first=true;
+		$s='';
 		while($line=readline('')){
-			if($first){
-				$first=false;
-			}else{
+			if($s!=''){
 				$s.="\n";
 			}
 			$s.=$line;
