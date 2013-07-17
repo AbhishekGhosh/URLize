@@ -1,2 +1,2 @@
-# Ignore Kate temp files
 *~
+.fuse_hidden*
